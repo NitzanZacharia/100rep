@@ -38,7 +38,7 @@ def mcqa_causal_model():
     """
     # Define model variables
     NUM_CHOICES = 4
-    ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+    SYMBOL_POOL = [str(i) for i in range(1, 101)]
     
     # Define object/color pairs for the questions
     COLOR_OBJECTS = [
@@ -55,8 +55,8 @@ def mcqa_causal_model():
                 [f"choice{x}" for x in range(NUM_CHOICES)] + ["answer_pointer", "answer"]
     
     values = {f"choice{x}": COLORS for x in range(NUM_CHOICES)}
-    values.update({f"symbol{x}": list(ALPHABET) for x in range(NUM_CHOICES)})
-    values.update({"answer_pointer": list(range(NUM_CHOICES)), "answer": list(ALPHABET)})
+    values.update({f"symbol{x}": SYMBOL_POOL for x in range(NUM_CHOICES)})
+    values.update({"answer_pointer": list(range(NUM_CHOICES)), "answer": SYMBOL_POOL})
     values.update({"question": COLOR_OBJECTS})
     
     # Define parent relationships
@@ -71,7 +71,7 @@ def mcqa_causal_model():
         return random.choice(COLOR_OBJECTS)
     
     def get_symbol():
-        return random.choice(list(ALPHABET))
+        return random.choice(SYMBOL_POOL)
     
     def get_choice():
         return random.choice(COLORS)
@@ -170,7 +170,7 @@ def mcqa_counterfactual_datasets(mcqa_causal_model, seed_everything):
     
     # Counterfactual generator functions
     def random_letter_counterfactual():
-        """Generate counterfactual with new random letters."""
+        """Generate counterfactual with new random symbols."""
         input_setting = model.sample_input(filter_func=is_input_valid)
         counterfactual = dict(input_setting)  # Make a copy
         
@@ -178,8 +178,7 @@ def mcqa_counterfactual_datasets(mcqa_causal_model, seed_everything):
         used_symbols = [input_setting[f"symbol{i}"] for i in range(NUM_CHOICES)]
         
         # Generate new set of symbols
-        alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-        available_symbols = [s for s in alphabet if s not in used_symbols]
+        available_symbols = [s for s in SYMBOL_POOL if s not in used_symbols]
         new_symbols = random.sample(available_symbols, NUM_CHOICES)
         
         # Update symbols in counterfactual

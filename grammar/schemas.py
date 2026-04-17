@@ -29,6 +29,7 @@ PEOPLE_NAMES = [
     "Mark",
 ]
 LETTERS = [chr(c) for c in range(ord("a"), ord("z") + 1)]
+BOX_LABELS = [str(x) for x in range(1, 101)]
 FEELINGS = ["loves", "admires", "misses", "hates", "dislikes", "likes", "appreciates"]
 DOCTOR_NAMES = [
     "Dr. Smith",
@@ -960,7 +961,7 @@ SCHEMA_SPACE_OBSERVATIONS = Schema(
 
 SCHEMA_BOXES = Schema(
     name="boxes",
-    items={"Object": HOUSEHOLD_ITEMS, "Box": [str(x) for x in range(1, 101)]},
+    items={"Object": HOUSEHOLD_ITEMS, "Box": BOX_LABELS},
     templates=Templates(
         prefix="",
         definitions={
@@ -980,10 +981,14 @@ SCHEMA_BOXES = Schema(
         capitalize_first_clause=True,
     ),
     max_new_tokens=3,
-    checker=lambda neural, causal: causal in re.search(r"(Box )?(\d+)", neural.strip()).group(2).strip(),
+    checker=lambda neural, causal: (
+        (match := re.search(r"(?:Box\s*)?(\d+)", neural.strip())) is not None
+        and match.group(1).strip() == causal
+        and causal in BOX_LABELS
+    ),
     matchers=[
         lambda s: re.match(f"^ ?({'|'.join(HOUSEHOLD_ITEMS)})$", s) is not None,
-        lambda s: re.match(r"^ \d{1,3}$", s) is not None,
+        lambda s: re.match(r"^\s*(?:100|[1-9]\d?)$", s) is not None,
     ],
 )
 

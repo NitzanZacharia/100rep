@@ -258,8 +258,8 @@ def main():
     parser.add_argument(
         "--num-instances",
         type=int,
-        default=20,
-        help="Number of instances (default: 20)",
+        default=100,
+        help="Number of instances (default: 100)",
     )
     parser.add_argument(
         "--num-samples",

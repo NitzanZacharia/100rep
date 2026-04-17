@@ -43,7 +43,7 @@ echo "Saving results to: $RESULTS_DIR"
 python run_layer_experiments.py \
     --model-id "google/gemma-2-2b-it" \
     --output-dir "$RESULTS_DIR" \
-    --num-instances 20 \
+    --num-instances 100 \
     --num-samples 1000 \
     --hf-token "<Should Put token here>"
 

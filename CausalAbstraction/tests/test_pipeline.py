@@ -17,8 +17,8 @@ class DummyTokenizer:
     eos_token = pad_token
 
     def __init__(self):
-        # simplistic vocab: each char → its ord() value
-        self._vocab = {chr(i): i for i in range(97, 123)}  # a‑z
+        # simplistic vocab: printable ASCII chars -> ord() value
+        self._vocab = {chr(i): i for i in range(32, 127)}
         self.pad_token_id = self.convert_tokens_to_ids(self.pad_token)
         self.padding_side = "right"
 
@@ -74,8 +74,9 @@ class DummyModel:
         max_new = kwargs.get("max_new_tokens", 3)
         # sequences: pad_token_id + incremental ints
         seqs = torch.arange(1, max_new + 1).repeat(batch_size, 1)
-        # fake logits: (batch, steps, vocab) where vocab=26 (a‑z)
-        scores = [torch.rand(batch_size, 26) for _ in range(max_new)] if kwargs.get("output_scores") else None
+        # fake logits: (batch, steps, vocab)
+        vocab_size = 128
+        scores = [torch.rand(batch_size, vocab_size) for _ in range(max_new)] if kwargs.get("output_scores") else None
         return DummyGenerateOutput(seqs, scores)
 
     # Needed by `prepare_inputs_for_generation` when position_ids=True

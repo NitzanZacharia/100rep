@@ -43,7 +43,7 @@ echo "Using Mamba2 GPU kernels (mamba-ssm installed in mamba2-gpu env)"
 python run_layer_experiments.py \
     --model-id "AntonV/mamba2-2.7b-hf" \
     --output-dir "$RESULTS_DIR" \
-    --num-instances 20 \
+    --num-instances 100 \
     --num-samples 1000 \
     --start-layer 58
 

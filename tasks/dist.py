@@ -437,7 +437,7 @@ def log(txt):
 @click.command()
 @click.option("--model-id", type=str, default="google/gemma-2-2b-it")
 @click.option("--schema-name", type=str, default="SCHEMA_BOXES")
-@click.option("--num-instances", type=int, default=20)
+@click.option("--num-instances", type=int, default=100)
 @click.option("--num-samples", type=int, default=1000)
 @click.option("--layer", type=int, default=17)
 @click.option(
