@@ -301,6 +301,56 @@ def to_single_token(tokenizer, text) -> int | None:
     return tokenizer.convert_tokens_to_ids(tokens[0])
 
 
+def _extract_boxes_answer_positions_from_offsets(prompt: str, tokenizer, metadata: dict, num_instances: int):
+    """
+    Tokenizer-agnostic extraction for SCHEMA_BOXES numeric answers.
+
+    Uses character offsets to map each "Box <number>" mention to the token index
+    containing that number's first digit, which works even when numbers are split
+    across multiple tokens.
+    """
+    enc = tokenizer(prompt, return_offsets_mapping=True)
+    offsets = enc.get("offset_mapping")
+    if offsets is None:
+        raise ValueError("Tokenizer did not return offset mappings.")
+
+    offsets = offsets[0]
+
+    answer_indices = []
+    answer_labels = []
+    for match in re.finditer(r"Box\s*(\d+)", prompt):
+        label = match.group(1)
+        digit_start = match.start(1)
+
+        token_idx = None
+        for idx, (start, end) in enumerate(offsets):
+            if start == end:
+                continue
+            if start <= digit_start < end:
+                token_idx = idx
+                break
+
+        if token_idx is not None:
+            answer_indices.append(token_idx)
+            answer_labels.append(label)
+
+    if len(answer_indices) != num_instances:
+        raise AssertionError(
+            f"Offset-based extraction expected {num_instances} indices, got {len(answer_indices)}."
+        )
+
+    def _as_label(x):
+        m = re.search(r"\d+", str(x))
+        return m.group(0) if m else None
+
+    keyload_label = _as_label(metadata["keyload"])
+    payload_label = _as_label(metadata["payload"])
+    keyload_index = answer_labels.index(keyload_label) if keyload_label in answer_labels else None
+    payload_index = answer_labels.index(payload_label) if payload_label in answer_labels else None
+
+    return answer_indices, keyload_index, payload_index
+
+
 def get_dist(
     model,
     tokenizer,
@@ -361,6 +411,19 @@ def get_dist(
                 if prompt_str_tokenized[i].lower().strip() in metadata["payload"].lower().strip():
                     payload_index = len(answer_indices) - 1
 
+        if (
+            schema.name == "boxes"
+            and cat_to_query == 1
+            and (
+                len(answer_indices) != num_instances
+                or keyload_index is None
+                or payload_index is None
+            )
+        ):
+            answer_indices, keyload_index, payload_index = _extract_boxes_answer_positions_from_offsets(
+                prompt, tokenizer, metadata, num_instances
+            )
+
         assert (
             len(answer_indices) == num_instances
         ), f"Expected {num_instances} answer indices, got {len(answer_indices)}.\nPrompt_str_tokenized: {prompt_str_tokenized}.\n{[prompt_str_tokenized[i] for i in answer_indices]}."
@@ -382,7 +445,8 @@ def get_dist(
         ):
             input_ids = tokenizer(prompt, return_tensors="pt").input_ids.to(model.device)
             logits = model(input_ids).logits
-            values = logits[0, -1, [to_single_token(tokenizer, prompt_str_tokenized[i]) for i in answer_indices]]
+            token_ids_at_answer_positions = input_ids[0, answer_indices].tolist()
+            values = logits[0, -1, token_ids_at_answer_positions]
 
             pos_pred = values.argmax().item()
 
