@@ -152,6 +152,36 @@ HOUSEHOLD_ITEMS = [
     "pipe",
     "ice",
     "key",
+    "candle",
+    "chair",
+    "table",
+    "lamp",
+    "pencil", 
+    "pen",
+    "notebook",
+    "ruler",
+    "scissors",
+    "tape",
+    "stapler",
+    "pillow",
+    "blanket",
+    "towel",
+    "soap",
+    "brush",
+    "comb",
+    "razor",
+    "sponge",
+    "bucket",
+    "mop",
+    "broom",
+    "hammer",
+    "nail",
+    "screw",
+    "drill",
+    "ladder",
+    "rope",
+    "chain",
+    "lock",
 ]
 LIQUIDS = [
     "beer",
@@ -930,7 +960,7 @@ SCHEMA_SPACE_OBSERVATIONS = Schema(
 
 SCHEMA_BOXES = Schema(
     name="boxes",
-    items={"Object": HOUSEHOLD_ITEMS, "Box": [x.upper() for x in LETTERS]},
+    items={"Object": HOUSEHOLD_ITEMS, "Box": [str(x) for x in range(1, 101)]},
     templates=Templates(
         prefix="",
         definitions={
@@ -950,12 +980,10 @@ SCHEMA_BOXES = Schema(
         capitalize_first_clause=True,
     ),
     max_new_tokens=3,
-    checker=lambda neural, causal: causal
-    in re.search("(Box )?([A-Z])", neural.strip()).group(2).strip(),  # Checker for when querying the letters
-    # checker=lambda neural, causal: causal.strip().lower() in neural.strip().lower(), # Checker for when querying the items
+    checker=lambda neural, causal: causal in re.search(r"(Box )?(\d+)", neural.strip()).group(2).strip(),
     matchers=[
         lambda s: re.match(f"^ ?({'|'.join(HOUSEHOLD_ITEMS)})$", s) is not None,
-        lambda s: re.match("^ [A-Z]$", s) is not None,
+        lambda s: re.match(r"^ \d{1,3}$", s) is not None,
     ],
 )
 
