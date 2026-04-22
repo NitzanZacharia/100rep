@@ -16,6 +16,9 @@ source ~/.bashrc
 # Activate your specific environment (using the underscore name)
 conda activate zamba-env
 
+# Reduce CUDA allocator fragmentation for long-context runs.
+export PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True,max_split_size_mb:128
+
 ### 2. Define Paths ###
 USERNAME="avivyossef"
 

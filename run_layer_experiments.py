@@ -411,16 +411,24 @@ def main():
     if args.hf_token:
         model_kwargs["token"] = args.hf_token
 
-    # 3. Specific overrides for 8-bit models (e.g. falcon-7b-instruct)
-    if "falcon-7b-instruct" in args.model_id.lower() or "8bit" in args.model_id.lower():
+    model_id_lower = args.model_id.lower()
+
+    # 3. Specific overrides for lower-memory model loading
+    if (
+        "falcon-7b-instruct" in model_id_lower
+        or "falcon-h1" in model_id_lower
+        or "8bit" in model_id_lower
+    ):
         print(f"[+] Applying 8-bit specific model loading configurations")
+        # Helps reduce CUDA memory fragmentation on long contexts.
+        os.environ.setdefault("PYTORCH_CUDA_ALLOC_CONF", "expandable_segments:True,max_split_size_mb:128")
         model_kwargs.update({
             "load_in_8bit": True,
             "device_map": "auto",
             "torch_dtype": torch.float16,  # 8-bit usually prefers fp16
         })
         
-    elif "zamba" in args.model_id.lower():
+    elif "zamba" in model_id_lower:
         print(f"[+] Applying Zamba/Mamba specific model loading configurations")
         model_kwargs["torch_dtype"] = torch.float16
 
