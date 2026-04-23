@@ -234,18 +234,30 @@ def run_with_cf_hf(
     enc_cf = tokenizer(cf_str, return_tensors="pt").to(device)
     enc_norm = tokenizer(normal_str, return_tensors="pt").to(device)
 
-    # --- forward on CF to cache resid_pre for the chosen layer ---
-    # In HF, outputs.hidden_states is a tuple of length num_layers+1:
-    # hidden_states[0] is embeddings output (resid_pre of layer 0),
-    # hidden_states[i] is resid_pre of layer i (input to block i).
-    with torch.no_grad():
-        out_cf = model(**enc_cf, output_hidden_states=True, return_dict=True)
-    hs_cf_all = out_cf.hidden_states
     nl = _num_layers(model)
     if not (0 <= layer_idx < nl):
         raise ValueError(f"layer_idx {layer_idx} out of range [0, {nl-1}]")
 
-    resid_pre_cf = hs_cf_all[layer_idx]  # shape: [B=1, T_cf, D]
+    # --- forward on CF to cache ONLY the target layer resid_pre ---
+    # Requesting output_hidden_states=True stores all layers and can OOM on long prompts.
+    target_layer = _get_layer_module(model, layer_idx)
+    captured_cf_resid_pre = []
+
+    def cf_capture_pre_hook(module, inputs):
+        hidden_states = inputs[0]
+        captured_cf_resid_pre.append(hidden_states.detach())
+
+    cf_handle = target_layer.register_forward_pre_hook(cf_capture_pre_hook, with_kwargs=False)
+    try:
+        with torch.no_grad():
+            model(**enc_cf, return_dict=True)
+    finally:
+        cf_handle.remove()
+
+    if not captured_cf_resid_pre:
+        raise RuntimeError("Failed to capture CF resid_pre from target layer hook.")
+
+    resid_pre_cf = captured_cf_resid_pre[0]  # shape: [B=1, T_cf, D]
     T_cf = resid_pre_cf.shape[1]
 
     # compute absolute indices for CF and Normal separately (support negatives)
@@ -258,7 +270,6 @@ def run_with_cf_hf(
     pos_norm = _to_abs_positions(T_norm, token_positions)
 
     # --- hook: forward_pre on the chosen layer to modify its input hidden_states ---
-    target_layer = _get_layer_module(model, layer_idx)
 
     def pre_hook(module, inputs):
         """
