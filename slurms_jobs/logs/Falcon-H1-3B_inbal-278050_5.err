@@ -1,0 +1,10 @@
+Traceback (most recent call last):
+  File "/vol/joberant_nobck/data/NLP_368307701_2526a/inbalmoryles/100reps/run_layer_experiments.py", line 459, in <module>
+    main()
+  File "/vol/joberant_nobck/data/NLP_368307701_2526a/inbalmoryles/100reps/run_layer_experiments.py", line 373, in main
+    model = AutoModelForCausalLM.from_pretrained(args.model_id, **model_kwargs)
+  File "/vol/joberant_nobck/data/NLP_368307701_2526a/inbalmoryles/envs/copy-env/lib/python3.10/site-packages/transformers/models/auto/auto_factory.py", line 387, in from_pretrained
+    return model_class.from_pretrained(
+  File "/vol/joberant_nobck/data/NLP_368307701_2526a/inbalmoryles/envs/copy-env/lib/python3.10/site-packages/transformers/modeling_utils.py", line 4114, in from_pretrained
+    model = cls(config, *model_args, **model_kwargs)
+TypeError: FalconH1ForCausalLM.__init__() got an unexpected keyword argument 'load_in_8bit'

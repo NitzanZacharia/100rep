@@ -1,0 +1,8 @@
+Traceback (most recent call last):
+  File "/vol/joberant_nobck/data/NLP_368307701_2526a/inbalmoryles/100reps/run_layer_experiments.py", line 459, in <module>
+    main()
+  File "/vol/joberant_nobck/data/NLP_368307701_2526a/inbalmoryles/100reps/run_layer_experiments.py", line 357, in main
+    if any(k in args.model_id_lower() for k in ["7b", "8bit", "h1"]) in args.model_id.lower():
+  File "/vol/joberant_nobck/data/NLP_368307701_2526a/inbalmoryles/100reps/run_layer_experiments.py", line 357, in <genexpr>
+    if any(k in args.model_id_lower() for k in ["7b", "8bit", "h1"]) in args.model_id.lower():
+NameError: name 'model_id_lower' is not defined

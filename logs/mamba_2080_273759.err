@@ -1,0 +1,20 @@
+Traceback (most recent call last):
+  File "/vol/joberant_nobck/data/NLP_368307701_2526a/inbalmoryles/100reps/run_layer_experiments.py", line 459, in <module>
+    main()
+  File "/vol/joberant_nobck/data/NLP_368307701_2526a/inbalmoryles/100reps/run_layer_experiments.py", line 373, in main
+    model = AutoModelForCausalLM.from_pretrained(args.model_id, **model_kwargs)
+  File "/vol/joberant_nobck/data/NLP_368307701_2526a/inbalmoryles/envs/zamba-env/lib/python3.10/site-packages/transformers/models/auto/auto_factory.py", line 487, in from_pretrained
+    resolved_config_file = cached_file(
+  File "/vol/joberant_nobck/data/NLP_368307701_2526a/inbalmoryles/envs/zamba-env/lib/python3.10/site-packages/transformers/utils/hub.py", line 342, in cached_file
+    resolved_file = hf_hub_download(
+  File "/vol/joberant_nobck/data/NLP_368307701_2526a/inbalmoryles/envs/zamba-env/lib/python3.10/site-packages/huggingface_hub/utils/_validators.py", line 114, in _inner_fn
+    return fn(*args, **kwargs)
+  File "/vol/joberant_nobck/data/NLP_368307701_2526a/inbalmoryles/envs/zamba-env/lib/python3.10/site-packages/huggingface_hub/file_download.py", line 1014, in hf_hub_download
+    return _hf_hub_download_to_cache_dir(
+  File "/vol/joberant_nobck/data/NLP_368307701_2526a/inbalmoryles/envs/zamba-env/lib/python3.10/site-packages/huggingface_hub/file_download.py", line 1131, in _hf_hub_download_to_cache_dir
+    os.makedirs(os.path.dirname(blob_path), exist_ok=True)
+  File "/vol/joberant_nobck/data/NLP_368307701_2526a/inbalmoryles/envs/zamba-env/lib/python3.10/os.py", line 215, in makedirs
+    makedirs(head, exist_ok=exist_ok)
+  File "/vol/joberant_nobck/data/NLP_368307701_2526a/inbalmoryles/envs/zamba-env/lib/python3.10/os.py", line 225, in makedirs
+    mkdir(name, mode)
+OSError: [Errno 122] Disk quota exceeded: '/a/home/cc/students/csguests/inbalmoryles/.cache/huggingface/hub/models--tiiuae--falcon-mamba-7b-instruct'

@@ -1,0 +1,4 @@
+  File "/vol/joberant_nobck/data/NLP_368307701_2526a/inbalmoryles/100reps/run_layer_experiments.py", line 360
+    model_kwargs.pop("load_in_8bit", None)
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+SyntaxError: invalid syntax. Perhaps you forgot a comma?

@@ -1,0 +1,15 @@
+Running on node: s-005
+Date: Tue 21 Apr 2026 17:50:10 IDT
+Model: tiiuae/Falcon-H1-3B-Instruct
+Saving results_boxes to: /vol/joberant_nobck/data/NLP_368307701_2526a/inbalmoryles/mixing-mechs-results_boxes/run_100boxes_1000samples/tiiuae/Falcon-H1-3B-Instruct
+Running Layer: 29
+[+] Using schema: SCHEMA_BOXES
+[+] Output directory: /vol/joberant_nobck/data/NLP_368307701_2526a/inbalmoryles/mixing-mechs-results_boxes/run_100boxes_1000samples/tiiuae/Falcon-H1-3B-Instruct
+[+] Loading model: tiiuae/Falcon-H1-3B-Instruct
+[+] Model has 32 layers
+[+] Random seed set to: 42
+[+] Setting up causal model and datasets
+[+] Running experiments for layers 29 to 29 (inclusive, 1 layers)...
+
+[+] Processing layer 29/31
+Job finished at: Tue 21 Apr 2026 17:51:18 IDT

@@ -1,0 +1,10 @@
+Running on node: s-005
+Date: Tue Apr 21 03:50:07 PM IDT 2026
+Model: tiiuae/Falcon-H1-3B-Instruct
+Saving results_boxes to: /vol/joberant_nobck/data/NLP_368307701_2526a/inbalmoryles/mixing-mechs-results_boxes/run_100boxes_1000samples/tiiuae/Falcon-H1-3B-Instruct
+Running Layer: 10
+[+] Using schema: SCHEMA_BOXES
+[+] Output directory: /vol/joberant_nobck/data/NLP_368307701_2526a/inbalmoryles/mixing-mechs-results_boxes/run_100boxes_1000samples/tiiuae/Falcon-H1-3B-Instruct
+[+] Loading model: tiiuae/Falcon-H1-3B-Instruct
+[+] Applying 8-bit specific model loading configurations
+Job finished at: Tue Apr 21 03:51:22 PM IDT 2026

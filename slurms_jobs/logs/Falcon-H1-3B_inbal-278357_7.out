@@ -1,0 +1,6 @@
+Running on node: s-004
+Date: Tue 21 Apr 2026 17:40:23 IDT
+Model: tiiuae/Falcon-H1-3B-Instruct
+Saving results_boxes to: /vol/joberant_nobck/data/NLP_368307701_2526a/inbalmoryles/mixing-mechs-results_boxes/run_100boxes_1000samples/tiiuae/Falcon-H1-3B-Instruct
+Running Layer: 7
+Job finished at: Tue 21 Apr 2026 17:40:46 IDT

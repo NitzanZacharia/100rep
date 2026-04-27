@@ -15,6 +15,8 @@ source ~/.bashrc
 
 # Activate the Mamba2 GPU environment
 conda activate mamba2-gpu
+export HF_HOME="/vol/joberant_nobck/data/NLP_368307701_2526a/inbalmoryles/.cache/huggingface"
+mkdir -p $HF_HOME
 
 ### 2. Define Paths ###
 USERNAME="avivyossef"

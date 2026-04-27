@@ -1,0 +1,66 @@
+/vol/joberant_nobck/data/NLP_368307701_2526a/inbalmoryles/envs/copy-env/lib/python3.10/site-packages/mamba_ssm/ops/selective_scan_interface.py:164: FutureWarning: `torch.cuda.amp.custom_fwd(args...)` is deprecated. Please use `torch.amp.custom_fwd(args..., device_type='cuda')` instead.
+  def forward(ctx, xz, conv1d_weight, conv1d_bias, x_proj_weight, delta_proj_weight,
+/vol/joberant_nobck/data/NLP_368307701_2526a/inbalmoryles/envs/copy-env/lib/python3.10/site-packages/mamba_ssm/ops/selective_scan_interface.py:240: FutureWarning: `torch.cuda.amp.custom_bwd(args...)` is deprecated. Please use `torch.amp.custom_bwd(args..., device_type='cuda')` instead.
+  def backward(ctx, dout):
+/vol/joberant_nobck/data/NLP_368307701_2526a/inbalmoryles/envs/copy-env/lib/python3.10/site-packages/mamba_ssm/ops/triton/layer_norm.py:986: FutureWarning: `torch.cuda.amp.custom_fwd(args...)` is deprecated. Please use `torch.amp.custom_fwd(args..., device_type='cuda')` instead.
+  def forward(
+/vol/joberant_nobck/data/NLP_368307701_2526a/inbalmoryles/envs/copy-env/lib/python3.10/site-packages/mamba_ssm/ops/triton/layer_norm.py:1045: FutureWarning: `torch.cuda.amp.custom_bwd(args...)` is deprecated. Please use `torch.amp.custom_bwd(args..., device_type='cuda')` instead.
+  def backward(ctx, dout, *args):
+/vol/joberant_nobck/data/NLP_368307701_2526a/inbalmoryles/envs/copy-env/lib/python3.10/site-packages/mamba_ssm/distributed/tensor_parallel.py:26: FutureWarning: `torch.cuda.amp.custom_fwd(args...)` is deprecated. Please use `torch.amp.custom_fwd(args..., device_type='cuda')` instead.
+  def forward(ctx, x, weight, bias, process_group=None, sequence_parallel=True):
+/vol/joberant_nobck/data/NLP_368307701_2526a/inbalmoryles/envs/copy-env/lib/python3.10/site-packages/mamba_ssm/distributed/tensor_parallel.py:62: FutureWarning: `torch.cuda.amp.custom_bwd(args...)` is deprecated. Please use `torch.amp.custom_bwd(args..., device_type='cuda')` instead.
+  def backward(ctx, grad_output):
+/vol/joberant_nobck/data/NLP_368307701_2526a/inbalmoryles/envs/copy-env/lib/python3.10/site-packages/mamba_ssm/ops/triton/ssd_combined.py:758: FutureWarning: `torch.cuda.amp.custom_fwd(args...)` is deprecated. Please use `torch.amp.custom_fwd(args..., device_type='cuda')` instead.
+  def forward(ctx, zxbcdt, conv1d_weight, conv1d_bias, dt_bias, A, D, chunk_size, initial_states=None, seq_idx=None, dt_limit=(0.0, float("inf")), return_final_states=False, activation="silu",
+/vol/joberant_nobck/data/NLP_368307701_2526a/inbalmoryles/envs/copy-env/lib/python3.10/site-packages/mamba_ssm/ops/triton/ssd_combined.py:836: FutureWarning: `torch.cuda.amp.custom_bwd(args...)` is deprecated. Please use `torch.amp.custom_bwd(args..., device_type='cuda')` instead.
+  def backward(ctx, dout, *args):
+Loading weights:   0%|          | 0/547 [00:00<?, ?it/s]Loading weights:   1%|          | 4/547 [00:00<00:13, 39.33it/s]Loading weights:   3%|▎         | 19/547 [00:00<00:05, 95.25it/s]Loading weights:   6%|▌         | 32/547 [00:00<00:04, 109.05it/s]Loading weights:   9%|▉         | 49/547 [00:00<00:03, 125.62it/s]Loading weights:  13%|█▎        | 70/547 [00:00<00:03, 152.86it/s]Loading weights:  16%|█▋        | 90/547 [00:00<00:02, 165.15it/s]Loading weights:  21%|██        | 115/547 [00:00<00:02, 181.51it/s]Loading weights:  26%|██▌       | 140/547 [00:00<00:02, 194.20it/s]Loading weights:  29%|██▉       | 160/547 [00:00<00:02, 187.87it/s]Loading weights:  33%|███▎      | 183/547 [00:01<00:01, 195.04it/s]Loading weights:  37%|███▋      | 203/547 [00:01<00:01, 193.50it/s]Loading weights:  41%|████      | 225/547 [00:01<00:01, 195.90it/s]Loading weights:  45%|████▍     | 245/547 [00:01<00:01, 188.83it/s]Loading weights:  49%|████▉     | 268/547 [00:01<00:01, 197.79it/s]Loading weights:  53%|█████▎    | 291/547 [00:01<00:01, 206.37it/s]Loading weights:  57%|█████▋    | 312/547 [00:01<00:01, 190.22it/s]Loading weights:  61%|██████    | 335/547 [00:01<00:01, 194.34it/s]Loading weights:  66%|██████▌   | 359/547 [00:01<00:00, 206.84it/s]Loading weights:  69%|██████▉   | 380/547 [00:02<00:00, 190.84it/s]Loading weights:  73%|███████▎  | 402/547 [00:02<00:00, 189.97it/s]Loading weights:  77%|███████▋  | 422/547 [00:02<00:00, 126.41it/s]Loading weights:  82%|████████▏ | 446/547 [00:02<00:00, 144.69it/s]Loading weights:  85%|████████▍ | 464/547 [00:02<00:00, 152.11it/s]Loading weights:  88%|████████▊ | 482/547 [00:03<00:00, 110.38it/s]Loading weights:  91%|█████████ | 497/547 [00:03<00:00, 93.52it/s] Loading weights:  94%|█████████▍| 513/547 [00:03<00:00, 85.00it/s]Loading weights:  97%|█████████▋| 531/547 [00:03<00:00, 100.45it/s]Loading weights:  99%|█████████▉| 544/547 [00:03<00:00, 82.46it/s] Loading weights: 100%|██████████| 547/547 [00:03<00:00, 142.08it/s]
+Layers:   0%|          | 0/1 [00:00<?, ?it/s]
+Layer 27:   0%|          | 0/1000 [00:00<?, ?it/s][ALayer 27:   0%|          | 0/1000 [00:00<?, ?it/s]
+Layers:   0%|          | 0/1 [00:00<?, ?it/s]
+Traceback (most recent call last):
+  File "/vol/joberant_nobck/data/NLP_368307701_2526a/inbalmoryles/100reps/run_layer_experiments.py", line 459, in <module>
+    main()
+  File "/vol/joberant_nobck/data/NLP_368307701_2526a/inbalmoryles/100reps/run_layer_experiments.py", line 433, in main
+    df = run_experiment_for_layer(
+  File "/vol/joberant_nobck/data/NLP_368307701_2526a/inbalmoryles/100reps/run_layer_experiments.py", line 175, in run_experiment_for_layer
+    with run_with_cf_hf(
+  File "/vol/joberant_nobck/data/NLP_368307701_2526a/inbalmoryles/envs/copy-env/lib/python3.10/contextlib.py", line 135, in __enter__
+    return next(self.gen)
+  File "/vol/joberant_nobck/data/NLP_368307701_2526a/inbalmoryles/100reps/tasks/dist.py", line 242, in run_with_cf_hf
+    out_cf = model(**enc_cf, output_hidden_states=True, return_dict=True)
+  File "/vol/joberant_nobck/data/NLP_368307701_2526a/inbalmoryles/envs/copy-env/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1553, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+  File "/vol/joberant_nobck/data/NLP_368307701_2526a/inbalmoryles/envs/copy-env/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1562, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "/vol/joberant_nobck/data/NLP_368307701_2526a/inbalmoryles/envs/copy-env/lib/python3.10/site-packages/transformers/utils/generic.py", line 887, in wrapper
+    output = func(self, *args, **kwargs)
+  File "/vol/joberant_nobck/data/NLP_368307701_2526a/inbalmoryles/envs/copy-env/lib/python3.10/site-packages/transformers/models/falcon_h1/modeling_falcon_h1.py", line 1212, in forward
+    outputs = self.model(
+  File "/vol/joberant_nobck/data/NLP_368307701_2526a/inbalmoryles/envs/copy-env/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1553, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+  File "/vol/joberant_nobck/data/NLP_368307701_2526a/inbalmoryles/envs/copy-env/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1562, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "/vol/joberant_nobck/data/NLP_368307701_2526a/inbalmoryles/envs/copy-env/lib/python3.10/site-packages/transformers/utils/generic.py", line 963, in wrapper
+    output = func(self, *args, **kwargs)
+  File "/vol/joberant_nobck/data/NLP_368307701_2526a/inbalmoryles/envs/copy-env/lib/python3.10/site-packages/transformers/utils/output_capturing.py", line 248, in wrapper
+    outputs = func(self, *args, **kwargs)
+  File "/vol/joberant_nobck/data/NLP_368307701_2526a/inbalmoryles/envs/copy-env/lib/python3.10/site-packages/transformers/models/falcon_h1/modeling_falcon_h1.py", line 1133, in forward
+    layer_outputs = decoder_layer(
+  File "/vol/joberant_nobck/data/NLP_368307701_2526a/inbalmoryles/envs/copy-env/lib/python3.10/site-packages/transformers/modeling_layers.py", line 93, in __call__
+    return super().__call__(*args, **kwargs)
+  File "/vol/joberant_nobck/data/NLP_368307701_2526a/inbalmoryles/envs/copy-env/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1553, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+  File "/vol/joberant_nobck/data/NLP_368307701_2526a/inbalmoryles/envs/copy-env/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1603, in _call_impl
+    result = forward_call(*args, **kwargs)
+  File "/vol/joberant_nobck/data/NLP_368307701_2526a/inbalmoryles/envs/copy-env/lib/python3.10/site-packages/transformers/models/falcon_h1/modeling_falcon_h1.py", line 966, in forward
+    mamba_hidden_states = self.mamba(
+  File "/vol/joberant_nobck/data/NLP_368307701_2526a/inbalmoryles/envs/copy-env/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1553, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+  File "/vol/joberant_nobck/data/NLP_368307701_2526a/inbalmoryles/envs/copy-env/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1562, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "/vol/joberant_nobck/data/NLP_368307701_2526a/inbalmoryles/envs/copy-env/lib/python3.10/site-packages/transformers/models/falcon_h1/modeling_falcon_h1.py", line 874, in forward
+    return self.torch_forward(hidden_states, cache_params, attention_mask)
+  File "/vol/joberant_nobck/data/NLP_368307701_2526a/inbalmoryles/envs/copy-env/lib/python3.10/site-packages/transformers/models/falcon_h1/modeling_falcon_h1.py", line 809, in torch_forward
+    Y_diag = (M[..., None] * hidden_states[:, :, None]).sum(dim=3)
+torch.OutOfMemoryError: CUDA out of memory. Tried to allocate 2.00 GiB. GPU 0 has a total capacity of 10.57 GiB of which 274.00 MiB is free. Including non-PyTorch memory, this process has 10.30 GiB memory in use. Of the allocated memory 10.08 GiB is allocated by PyTorch, and 38.51 MiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://pytorch.org/docs/stable/notes/cuda.html#environment-variables)

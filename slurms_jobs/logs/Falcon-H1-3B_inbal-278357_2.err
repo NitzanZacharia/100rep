@@ -1,0 +1,10 @@
+usage: run_layer_experiments.py [-h] [--model-id MODEL_ID]
+                                [--num-instances NUM_INSTANCES]
+                                [--num-samples NUM_SAMPLES]
+                                [--cat-to-query CAT_TO_QUERY]
+                                [--schema-name SCHEMA_NAME] [--generate]
+                                [--hf-token HF_TOKEN]
+                                [--output-dir OUTPUT_DIR] [--seed SEED]
+                                [--start-layer START_LAYER]
+                                [--end-layer END_LAYER]
+run_layer_experiments.py: error: unrecognized arguments: --trust-remote-code
