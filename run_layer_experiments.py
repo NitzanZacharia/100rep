@@ -92,6 +92,42 @@ def sanitize_model_name(model_id: str) -> str:
     return model_id.replace("/", "_")
 
 
+def get_model_input_device(model) -> torch.device:
+    """
+    Resolve a safe device for input tensors when model was loaded with device_map='auto'.
+    Avoids choosing 'meta'/'disk' placements used by offloading.
+    """
+    if hasattr(model, "hf_device_map") and isinstance(model.hf_device_map, dict):
+        # Prefer CUDA if any module is placed there.
+        for dev in model.hf_device_map.values():
+            if isinstance(dev, int):
+                return torch.device(f"cuda:{dev}")
+            if isinstance(dev, str):
+                d = dev.lower()
+                if d.startswith("cuda"):
+                    return torch.device(dev)
+
+        # Otherwise pick the first concrete non-meta/non-disk mapping.
+        for dev in model.hf_device_map.values():
+            if isinstance(dev, int):
+                return torch.device(f"cuda:{dev}")
+            if isinstance(dev, str):
+                d = dev.lower()
+                if d not in {"meta", "disk"}:
+                    return torch.device(dev)
+
+    # Fallback: first non-meta parameter/buffer device.
+    for p in model.parameters():
+        if p.device.type != "meta":
+            return p.device
+    for b in model.buffers():
+        if b.device.type != "meta":
+            return b.device
+
+    # Last resort for fully offloaded edge cases.
+    return torch.device("cpu")
+
+
 def _extract_boxes_answer_positions_from_offsets(prompt: str, tokenizer, metadata: dict, num_instances: int):
     """
     Tokenizer-agnostic extraction for SCHEMA_BOXES numeric answers.
@@ -164,6 +200,7 @@ def run_experiment_for_layer(
     layer: int,
     cat_to_query: int,
     model_id: str,
+    model_input_device: torch.device,
     generate: bool = False,
 ):
     """
@@ -253,9 +290,16 @@ def run_experiment_for_layer(
         pos_index = metadata["dst_index"]
 
         with run_with_cf_hf(
-            model, tokenizer, prompt, cf_prompt, layer_idx=layer, token_positions=token_positions, alpha=1
+            model,
+            tokenizer,
+            prompt,
+            cf_prompt,
+            layer_idx=layer,
+            token_positions=token_positions,
+            device=model_input_device,
+            alpha=1,
         ):
-            input_ids = tokenizer(prompt, return_tensors="pt").input_ids.to(model.device)
+            input_ids = tokenizer(prompt, return_tensors="pt").input_ids.to(model_input_device)
             # START CHANGE
             with torch.no_grad():
                 # IMPORTANT: This line must be indented further than the 'with' above it
@@ -445,6 +489,8 @@ def main():
 
     # 4. Load Model
     model = AutoModelForCausalLM.from_pretrained(args.model_id, **model_kwargs)
+    model_input_device = get_model_input_device(model)
+    print(f"[+] Using input device: {model_input_device}")
 
     # 5. Load Tokenizer
     tokenizer_kwargs = {"token": args.hf_token} if args.hf_token else {}
@@ -514,6 +560,7 @@ def main():
             layer,
             args.cat_to_query,
             args.model_id,
+            model_input_device,
             generate=args.generate,
         )
         
