@@ -105,8 +105,17 @@ def _extract_boxes_answer_positions_from_offsets(prompt: str, tokenizer, metadat
     if offsets is None:
         raise ValueError("Tokenizer did not return offset mappings.")
 
-    # Batch size is 1 for a single prompt.
-    offsets = offsets[0]
+    # Fast tokenizers may return either:
+    # - unbatched: List[Tuple[start, end]]
+    # - batched:   List[List[Tuple[start, end]]]
+    if offsets and isinstance(offsets[0], (list, tuple)):
+        first = offsets[0]
+        if isinstance(first, tuple) and len(first) == 2:
+            # Already unbatched list of (start, end).
+            pass
+        elif isinstance(first, list):
+            # Batched output for a single prompt.
+            offsets = first
 
     answer_indices = []
     answer_labels = []
