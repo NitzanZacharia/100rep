@@ -186,6 +186,10 @@ def run_experiment_for_layer(
     token_positions = [-1]
     end_str = get_end_str(model_id)
     model_id_str = model_id
+    
+    def _extract_numeric_label(token: str):
+        match = re.search(r"\d+", str(token))
+        return match.group(0) if match else None
 
     for cur_index in tqdm(range(num_samples), desc=f"Layer {layer}"):
         prompt = format_prompt(tokenizer, train[cur_index]["input"]["raw_input"])
@@ -194,6 +198,7 @@ def run_experiment_for_layer(
         metadata = train[cur_index]["input"]["metadata"]
 
         answer_indices = []
+        answer_labels = []
         keyload_index = None
         payload_index = None
         for i, token in enumerate(prompt_str_tokenized):
@@ -202,6 +207,7 @@ def run_experiment_for_layer(
 
             if schema.matchers[cat_to_query](token):
                 answer_indices.append(i)
+                answer_labels.append(_extract_numeric_label(token) if schema.name == "boxes" and cat_to_query == 1 else token)
 
                 if prompt_str_tokenized[i].lower().strip() in metadata["keyload"].lower().strip():
                     keyload_index = len(answer_indices) - 1
@@ -222,6 +228,7 @@ def run_experiment_for_layer(
             answer_indices, keyload_index, payload_index = _extract_boxes_answer_positions_from_offsets(
                 prompt, tokenizer, metadata, num_instances
             )
+            answer_labels = [_extract_numeric_label(prompt_str_tokenized[idx]) for idx in answer_indices]
 
         assert (
             len(answer_indices) == num_instances
@@ -257,7 +264,10 @@ def run_experiment_for_layer(
                 pred = tokenizer.decode(pred_ids[0], skip_special_tokens=True)
                 pred = pred[pred.find(end_str) + len(end_str) :]
             else:
-                pred = prompt_str_tokenized[answer_indices[pos_pred]]
+                if schema.name == "boxes" and cat_to_query == 1:
+                    pred = answer_labels[pos_pred]
+                else:
+                    pred = prompt_str_tokenized[answer_indices[pos_pred]]
             
             # Strip whitespace and clean prediction to ensure proper matching
             # Remove all whitespace characters (spaces, tabs, newlines, etc.)
