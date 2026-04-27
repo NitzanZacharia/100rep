@@ -92,6 +92,59 @@ def sanitize_model_name(model_id: str) -> str:
     return model_id.replace("/", "_")
 
 
+def _extract_boxes_answer_positions_from_offsets(prompt: str, tokenizer, metadata: dict, num_instances: int):
+    """
+    Tokenizer-agnostic extraction for SCHEMA_BOXES numeric answers.
+
+    Uses character offsets to map each "Box <number>" mention to the token index
+    containing that number's first digit, which works even when numbers are split
+    across multiple tokens (e.g., "6" + "9" for 69).
+    """
+    enc = tokenizer(prompt, return_offsets_mapping=True)
+    offsets = enc.get("offset_mapping")
+    if offsets is None:
+        raise ValueError("Tokenizer did not return offset mappings.")
+
+    # Batch size is 1 for a single prompt.
+    offsets = offsets[0]
+
+    answer_indices = []
+    answer_labels = []
+    for match in re.finditer(r"Box\s*(\d+)", prompt):
+        label = match.group(1)
+        digit_start = match.start(1)
+
+        token_idx = None
+        for idx, (start, end) in enumerate(offsets):
+            # Special tokens often map to (0, 0); skip them.
+            if start == end:
+                continue
+            if start <= digit_start < end:
+                token_idx = idx
+                break
+
+        if token_idx is not None:
+            answer_indices.append(token_idx)
+            answer_labels.append(label)
+
+    # Only context statements should have a numeric "Box <n>" pattern.
+    if len(answer_indices) != num_instances:
+        raise AssertionError(
+            f"Offset-based extraction expected {num_instances} indices, got {len(answer_indices)}."
+        )
+
+    def _as_label(x):
+        m = re.search(r"\d+", str(x))
+        return m.group(0) if m else None
+
+    keyload_label = _as_label(metadata["keyload"])
+    payload_label = _as_label(metadata["payload"])
+    keyload_index = answer_labels.index(keyload_label) if keyload_label in answer_labels else None
+    payload_index = answer_labels.index(payload_label) if payload_label in answer_labels else None
+
+    return answer_indices, keyload_index, payload_index
+
+
 def run_experiment_for_layer(
     model,
     tokenizer,
@@ -133,6 +186,10 @@ def run_experiment_for_layer(
     token_positions = [-1]
     end_str = get_end_str(model_id)
     model_id_str = model_id
+    
+    def _extract_numeric_label(token: str):
+        match = re.search(r"\d+", str(token))
+        return match.group(0) if match else None
 
     for cur_index in tqdm(range(num_samples), desc=f"Layer {layer}"):
         prompt = format_prompt(tokenizer, train[cur_index]["input"]["raw_input"])
@@ -141,25 +198,37 @@ def run_experiment_for_layer(
         metadata = train[cur_index]["input"]["metadata"]
 
         answer_indices = []
+        answer_labels = []
         keyload_index = None
         payload_index = None
         for i, token in enumerate(prompt_str_tokenized):
             if "qwen" in model_id_str.lower() and i < 10:
                 continue
 
-            clean_token = token.strip()
-            is_digit = any(c.isdigit() for c in clean_token) and clean_token != ""
-            prev_token = prompt_str_tokenized[i-1].strip() if i > 0 else ""
-            was_prev_digit = any(c.isdigit() for c in prev_token) and prev_token != ""
-
-            if is_digit and not was_prev_digit:
+            if schema.matchers[cat_to_query](token):
                 answer_indices.append(i)
+                answer_labels.append(_extract_numeric_label(token) if schema.name == "boxes" and cat_to_query == 1 else token)
 
                 if prompt_str_tokenized[i].lower().strip() in metadata["keyload"].lower().strip():
                     keyload_index = len(answer_indices) - 1
 
                 if prompt_str_tokenized[i].lower().strip() in metadata["payload"].lower().strip():
                     payload_index = len(answer_indices) - 1
+
+        if (
+            schema.name == "boxes"
+            and cat_to_query == 1
+            and (
+                len(answer_indices) != num_instances
+                or keyload_index is None
+                or payload_index is None
+            )
+        ):
+            # Fallback for tokenizers that split numeric labels into multiple tokens.
+            answer_indices, keyload_index, payload_index = _extract_boxes_answer_positions_from_offsets(
+                prompt, tokenizer, metadata, num_instances
+            )
+            answer_labels = [_extract_numeric_label(prompt_str_tokenized[idx]) for idx in answer_indices]
 
         assert (
             len(answer_indices) == num_instances
@@ -195,7 +264,10 @@ def run_experiment_for_layer(
                 pred = tokenizer.decode(pred_ids[0], skip_special_tokens=True)
                 pred = pred[pred.find(end_str) + len(end_str) :]
             else:
-                pred = prompt_str_tokenized[answer_indices[pos_pred]]
+                if schema.name == "boxes" and cat_to_query == 1:
+                    pred = answer_labels[pos_pred]
+                else:
+                    pred = prompt_str_tokenized[answer_indices[pos_pred]]
             
             # Strip whitespace and clean prediction to ensure proper matching
             # Remove all whitespace characters (spaces, tabs, newlines, etc.)
@@ -263,8 +335,8 @@ def main():
     parser.add_argument(
         "--num-instances",
         type=int,
-        default=20,
-        help="Number of instances (default: 20)",
+        default=100,
+        help="Number of instances (default: 100)",
     )
     parser.add_argument(
         "--num-samples",
@@ -320,12 +392,6 @@ def main():
         help="End layer index (0-based, inclusive). If not specified, goes to the last layer.",
     )
     
-    parser.add_argument(
-        "--trust-remote-code",
-        action="store_true",
-        help="Trust remote code when loading the model from Hugging Face.",
-    )
-
     args = parser.parse_args()
     
     # Get schema
