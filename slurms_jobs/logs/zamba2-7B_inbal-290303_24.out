@@ -1,0 +1,9 @@
+Running on node: s-005
+Date: Mon 27 Apr 2026 20:34:23 IDT
+Model: Zyphra/Zamba2-7B-instruct
+Saving results_boxes to: /vol/joberant_nobck/data/NLP_368307701_2526a/inbalmoryles/mixing-mechs-results_boxes/run_100boxes_1000samples/Zyphra/Zamba2-7B-instruct
+Running Layer: 24
+[+] Using schema: SCHEMA_BOXES
+[+] Output directory: /vol/joberant_nobck/data/NLP_368307701_2526a/inbalmoryles/mixing-mechs-results_boxes/run_100boxes_1000samples/Zyphra/Zamba2-7B-instruct
+[+] Loading model: Zyphra/Zamba2-7B-instruct
+[+] Applying Zamba/Mamba specific model loading configurations

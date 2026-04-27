@@ -1,0 +1,16 @@
+Running on node: s-005
+Date: Mon 27 Apr 2026 20:33:26 IDT
+Model: Zyphra/Zamba2-7B-instruct
+Saving results_boxes to: /vol/joberant_nobck/data/NLP_368307701_2526a/inbalmoryles/mixing-mechs-results_boxes/run_100boxes_1000samples/Zyphra/Zamba2-7B-instruct
+Running Layer: 14
+[+] Using schema: SCHEMA_BOXES
+[+] Output directory: /vol/joberant_nobck/data/NLP_368307701_2526a/inbalmoryles/mixing-mechs-results_boxes/run_100boxes_1000samples/Zyphra/Zamba2-7B-instruct
+[+] Loading model: Zyphra/Zamba2-7B-instruct
+[+] Applying Zamba/Mamba specific model loading configurations
+[+] Model has 81 layers
+[+] Random seed set to: 42
+[+] Setting up causal model and datasets
+[+] Running experiments for layers 14 to 14 (inclusive, 1 layers)...
+
+[+] Processing layer 14/80
+Job finished at: Mon 27 Apr 2026 20:34:16 IDT
