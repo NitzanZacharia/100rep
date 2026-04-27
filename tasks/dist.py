@@ -239,7 +239,7 @@ def run_with_cf_hf(
     # hidden_states[0] is embeddings output (resid_pre of layer 0),
     # hidden_states[i] is resid_pre of layer i (input to block i).
     with torch.no_grad():
-        out_cf = model(**enc_cf, output_hidden_states=True, return_dict=True)
+        out_cf = model(**enc_cf, output_hidden_states=True, return_dict=True, use_cache=False)
     hs_cf_all = out_cf.hidden_states
     nl = _num_layers(model)
     if not (0 <= layer_idx < nl):
