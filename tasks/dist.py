@@ -314,7 +314,12 @@ def _extract_boxes_answer_positions_from_offsets(prompt: str, tokenizer, metadat
     if offsets is None:
         raise ValueError("Tokenizer did not return offset mappings.")
 
-    offsets = offsets[0]
+    if offsets and isinstance(offsets[0], (list, tuple)):
+        first = offsets[0]
+        if isinstance(first, tuple) and len(first) == 2:
+            pass
+        elif isinstance(first, list):
+            offsets = first
 
     answer_indices = []
     answer_labels = []
@@ -348,7 +353,7 @@ def _extract_boxes_answer_positions_from_offsets(prompt: str, tokenizer, metadat
     keyload_index = answer_labels.index(keyload_label) if keyload_label in answer_labels else None
     payload_index = answer_labels.index(payload_label) if payload_label in answer_labels else None
 
-    return answer_indices, keyload_index, payload_index
+    return answer_indices, answer_labels, keyload_index, payload_index
 
 
 def get_dist(
@@ -388,6 +393,10 @@ def get_dist(
 
     token_positions = [-1]
     end_str = get_end_str(model_name)
+    
+    def _extract_numeric_label(token: str):
+        match = re.search(r"\d+", str(token))
+        return match.group(0) if match else None
 
     for cur_index in _tqdm(range(num_samples)):
         prompt = format_prompt(tokenizer, train[cur_index]["input"]["raw_input"])
@@ -396,6 +405,7 @@ def get_dist(
         metadata = train[cur_index]["input"]["metadata"]
 
         answer_indices = []
+        answer_labels = []
         keyload_index = None
         payload_index = None
         for i, token in enumerate(prompt_str_tokenized):
@@ -404,6 +414,7 @@ def get_dist(
 
             if schema.matchers[cat_to_query](token):
                 answer_indices.append(i)
+                answer_labels.append(_extract_numeric_label(token) if schema.name == "boxes" and cat_to_query == 1 else token)
 
                 if prompt_str_tokenized[i].lower().strip() in metadata["keyload"].lower().strip():
                     keyload_index = len(answer_indices) - 1
@@ -420,7 +431,7 @@ def get_dist(
                 or payload_index is None
             )
         ):
-            answer_indices, keyload_index, payload_index = _extract_boxes_answer_positions_from_offsets(
+            answer_indices, answer_labels, keyload_index, payload_index = _extract_boxes_answer_positions_from_offsets(
                 prompt, tokenizer, metadata, num_instances
             )
 
@@ -455,7 +466,10 @@ def get_dist(
                 pred = tokenizer.decode(pred_ids[0], skip_special_tokens=True)
                 pred = pred[pred.find(end_str) + len(end_str) :]
             else:
-                pred = prompt_str_tokenized[answer_indices[pos_pred]]
+                if schema.name == "boxes" and cat_to_query == 1:
+                    pred = answer_labels[pos_pred]
+                else:
+                    pred = prompt_str_tokenized[answer_indices[pos_pred]]
 
             if try_schema_checker(pred, metadata["positional"], schema):
                 patch_effect = "positional"

@@ -187,7 +187,7 @@ def _extract_boxes_answer_positions_from_offsets(prompt: str, tokenizer, metadat
     keyload_index = answer_labels.index(keyload_label) if keyload_label in answer_labels else None
     payload_index = answer_labels.index(payload_label) if payload_label in answer_labels else None
 
-    return answer_indices, keyload_index, payload_index
+    return answer_indices, answer_labels, keyload_index, payload_index
 
 
 def run_experiment_for_layer(
@@ -271,10 +271,9 @@ def run_experiment_for_layer(
             )
         ):
             # Fallback for tokenizers that split numeric labels into multiple tokens.
-            answer_indices, keyload_index, payload_index = _extract_boxes_answer_positions_from_offsets(
+            answer_indices, answer_labels, keyload_index, payload_index = _extract_boxes_answer_positions_from_offsets(
                 prompt, tokenizer, metadata, num_instances
             )
-            answer_labels = [_extract_numeric_label(prompt_str_tokenized[idx]) for idx in answer_indices]
 
         assert (
             len(answer_indices) == num_instances
