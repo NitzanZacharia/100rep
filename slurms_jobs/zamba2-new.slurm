@@ -25,7 +25,7 @@ USERNAME="inbalmoryles"
 VOL_BASE="/vol/joberant_nobck/data/NLP_368307701_2526a/${USERNAME}"
 
 # Model and Directories
-MODEL_ID="Zyphra/Zamba2-7B-instruct"
+MODEL_ID="Zyphra/Zamba2-2.7B-Instruct-v2"
 REPO_DIR="/vol/joberant_nobck/data/NLP_368307701_2526a/inbalmoryles/100reps"
 RESULTS_DIR="${VOL_BASE}/mixing-mechs-results_boxes/run_100boxes_1000samples/${MODEL_ID}"
 
