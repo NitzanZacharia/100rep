@@ -5,7 +5,7 @@
 #SBATCH --output=logs/%x-%A_%a.out
 #SBATCH --error=logs/%x-%A_%a.err
 #SBATCH --partition=studentkillable
-#SBATCH --array=0-80
+#SBATCH --array=0-54
 #SBATCH --time=23:50:00
 #SBATCH --account=gpu-students
 #SBATCH --gres=gpu:geforce_rtx_2080:2
