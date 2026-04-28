@@ -1,5 +1,0 @@
-Running on GPU: NVIDIA GeForce RTX 2080 Ti
-[+] Using schema: SCHEMA_BOXES
-[+] Output directory: /vol/joberant_nobck/data/NLP_368307701_2526a/inbalmoryles/100reps/tiiuae_falcon-mamba-7b-instruct
-[+] Loading model: tiiuae/falcon-mamba-7b-instruct
-[+] Applying 8-bit specific model loading configurations
