@@ -1,7 +1,7 @@
 #!/bin/bash
 
 ### Resource Allocation ###
-#SBATCH --job-name=zamba2-7B_inbal
+#SBATCH --job-name=zamba2-2.7B_inbal
 #SBATCH --output=logs/%x-%A_%a.out
 #SBATCH --error=logs/%x-%A_%a.err
 #SBATCH --partition=studentkillable

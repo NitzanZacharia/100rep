@@ -486,17 +486,11 @@ def main():
     elif "zamba" in args.model_id.lower():
         print(f"[+] Applying Zamba/Mamba specific model loading configurations")
         model_kwargs["torch_dtype"] = torch.float16
-        # Triton mamba kernels require GPU tensors. Avoid silent CPU offload in auto mapping.
+        # Triton mamba kernels do not play well with sharded/offloaded placement.
+        # Force the full model onto a single GPU so all kernel inputs stay on CUDA.
         if torch.cuda.is_available():
-            model_kwargs["device_map"] = "balanced"
-            max_memory = {}
-            for i in range(torch.cuda.device_count()):
-                total_gib = torch.cuda.get_device_properties(i).total_memory // (1024**3)
-                usable_gib = max(1, int(total_gib * 0.9))
-                max_memory[i] = f"{usable_gib}GiB"
-            max_memory["cpu"] = "0GiB"
-            model_kwargs["max_memory"] = max_memory
-            print(f"[+] Zamba GPU-only max_memory: {max_memory}")
+            model_kwargs["device_map"] = {"": 0}
+            print("[+] Zamba forced onto single GPU: cuda:0")
 
     # 4. Load Model
     model = AutoModelForCausalLM.from_pretrained(args.model_id, **model_kwargs)
