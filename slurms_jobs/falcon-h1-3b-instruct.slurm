@@ -1,51 +1,60 @@
 #!/bin/bash
 
 ### Resource Allocation ###
-#SBATCH --job-name=falcon-h1-3B-instruct_patch
-#SBATCH --output=%x-%j.out        # Log file: falcon-h1-3B-instruct_patch-12345.out
-#SBATCH --error=%x-%j.err         # Error file
+#SBATCH --job-name=Falcon-H1-3B_inbal
+#SBATCH --output=logs/%x-%A_%a.out
+#SBATCH --error=logs/%x-%A_%a.err
 #SBATCH --partition=studentkillable
-#SBATCH --time=24:00:00           # 24 hours max runtime
-#SBATCH --gres=gpu:1              # 1 GPU
-#SBATCH --cpus-per-task=2
-#SBATCH --mem=32G
+#SBATCH --account=gpu-students
+#SBATCH --array=0-31
+#SBATCH --time=23:50:00
+#SBATCH --gres=gpu:geforce_rtx_2080:1
+#SBATCH --cpus-per-task=8
+#SBATCH --mem=48G
 
 ### 1. Setup Environment ###
-source ~/.bashrc
+source /vol/joberant_nobck/data/NLP_368307701_2526a/inbalmoryles/miniconda3/etc/profile.d/conda.sh
+conda activate /vol/joberant_nobck/data/NLP_368307701_2526a/inbalmoryles/envs/falcon-env
+export HF_HOME="/vol/joberant_nobck/data/NLP_368307701_2526a/inbalmoryles/.cache/huggingface"
+mkdir -p $HF_HOME
 
-# Activate your specific environment (using the underscore name)
-conda activate zamba-env
+export PYTORCH_CUDA_ALLOC_CONF=max_split_size_mb:128
 
 ### 2. Define Paths ###
-USERNAME="avivyossef"
-
-# A. Base Volume Path (The Root)
+USERNAME="inbalmoryles"
 VOL_BASE="/vol/joberant_nobck/data/NLP_368307701_2526a/${USERNAME}"
 
-# B. Derived Paths
+# Model and Directories
 MODEL_ID="tiiuae/Falcon-H1-3B-Instruct"
-REPO_DIR="${VOL_BASE}/mixing-mechs-nlp"
-RESULTS_DIR="${VOL_BASE}/${MODEL_ID}"
+REPO_DIR="/vol/joberant_nobck/data/NLP_368307701_2526a/inbalmoryles/100reps"
+RESULTS_DIR="${VOL_BASE}/mixing-mechs-results_boxes/run_100boxes_1000samples/${MODEL_ID}"
 
-# Ensure the results directory actually exists
-mkdir -p "$RESULTS_DIR"
+# Cache & Setup
+export HF_HOME="${VOL_BASE}/hf_cache"
+export TRITON_CACHE_DIR="/vol/joberant_nobck/data/NLP_368307701_2526a/inbalmoryles/triton_cache"
+export TMPDIR="${VOL_BASE}/tmp"
+export PIP_CACHE_DIR="${VOL_BASE}/pip_cache"
+export HF_TOKEN=$(cat "${VOL_BASE}/hf_token.txt")
+
+mkdir -p "$TRITON_CACHE_DIR" "$TMPDIR" "$RESULTS_DIR" "$PIP_CACHE_DIR" "$HF_HOME"
 
 ### 3. Execution ###
-# CRITICAL: We move to the code directory so imports work
 cd "$REPO_DIR"
 
 echo "Running on node: $HOSTNAME"
 echo "Date: $(date)"
-echo "Base Volume:  $VOL_BASE"
-echo "Code Dir:     $REPO_DIR"
-echo "Saving results to: $RESULTS_DIR"
+echo "Model: $MODEL_ID"
+echo "Saving results_boxes to: $RESULTS_DIR"
+echo "Running Layer: $SLURM_ARRAY_TASK_ID"
 
 python run_layer_experiments.py \
     --model-id "${MODEL_ID}" \
     --output-dir "$RESULTS_DIR" \
-    --start-layer 32 \
     --num-instances 100 \
     --num-samples 1000 \
-    --generate
+    --hf-token "$HF_TOKEN" \
+    --start-layer $SLURM_ARRAY_TASK_ID \
+    --end-layer $SLURM_ARRAY_TASK_ID \
+    --trust-remote-code
 
 echo "Job finished at: $(date)"

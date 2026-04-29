@@ -345,6 +345,11 @@ def main():
         default=None,
         help="End layer index (0-based, inclusive). If not specified, goes to the last layer.",
     )
+    parser.add_argument(
+        "--trust-remote-code",
+        action="store_true",
+        help="Pass trust_remote_code=True when loading model and tokenizer (default: False)",
+    )
     
     args = parser.parse_args()
     
@@ -371,9 +376,11 @@ def main():
         "torch_dtype": torch.bfloat16,  # Default for modern models
     }
 
-    # 2. Add Token if present
+    # 2. Add Token and trust_remote_code if present
     if args.hf_token:
         model_kwargs["token"] = args.hf_token
+    if args.trust_remote_code:
+        model_kwargs["trust_remote_code"] = True
 
     # 3. Specific overrides for 8-bit models (e.g. falcon-7b-instruct)
     if "falcon-7b-instruct" in args.model_id.lower() or "8bit" in args.model_id.lower():
@@ -393,6 +400,8 @@ def main():
 
     # 5. Load Tokenizer
     tokenizer_kwargs = {"token": args.hf_token} if args.hf_token else {}
+    if args.trust_remote_code:
+        tokenizer_kwargs["trust_remote_code"] = True
     tokenizer = AutoTokenizer.from_pretrained(args.model_id, **tokenizer_kwargs)
     
     # Get number of layers
