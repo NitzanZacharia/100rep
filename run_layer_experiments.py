@@ -166,16 +166,29 @@ def run_experiment_for_layer(
             if "qwen" in model_id_str.lower() and i < 10:
                 continue
 
+            # Primary: tokenizer produced a single token that starts with a space
+            # followed by digits (e.g. Gemma/Llama: " 10").
             if schema.matchers[cat_to_query](token):
-                answer_indices.append(i)
+                idx = i
+            # Fallback: tokenizer split the space and digits into separate tokens
+            # (e.g. Falcon-H1 BPE: "Box 10" → [' Box', ' ', '1', '0']).
+            # Detect the pattern ' Box' + ' ' + digit and record the digit position.
+            elif (
+                token.strip() == "Box"
+                and i + 2 < len(prompt_str_tokenized)
+                and prompt_str_tokenized[i + 1] == " "
+                and prompt_str_tokenized[i + 2].strip().isdigit()
+            ):
+                idx = i + 2
+            else:
+                continue
 
-                # Use complete label (handles multi-token numbers like "10" = " 1"+"0")
-                complete = _get_complete_label(prompt_str_tokenized, i)
-                if complete.lower() in metadata["keyload"].lower().strip():
-                    keyload_index = len(answer_indices) - 1
-
-                if complete.lower() in metadata["payload"].lower().strip():
-                    payload_index = len(answer_indices) - 1
+            answer_indices.append(idx)
+            complete = _get_complete_label(prompt_str_tokenized, idx)
+            if complete.lower() in metadata["keyload"].lower().strip():
+                keyload_index = len(answer_indices) - 1
+            if complete.lower() in metadata["payload"].lower().strip():
+                payload_index = len(answer_indices) - 1
 
         assert (
             len(answer_indices) == num_instances
@@ -193,14 +206,6 @@ def run_experiment_for_layer(
         # Resolve the full label for every answer position once (handles multi-token numbers)
         answer_labels = [_get_complete_label(prompt_str_tokenized, idx) for idx in answer_indices]
 
-        # First token of each label — used for logit-based scoring.
-        # For single-token labels this is exact; for multi-token labels it is the
-        # best single-step approximation available without extra forward passes.
-        answer_first_token_ids = [
-            tokenizer.encode(' ' + lbl, add_special_tokens=False)[0]
-            for lbl in answer_labels
-        ]
-
         with run_with_cf_hf(
             model, tokenizer, prompt, cf_prompt, layer_idx=layer, token_positions=token_positions, alpha=1
         ):
@@ -208,6 +213,10 @@ def run_experiment_for_layer(
             with torch.no_grad():
                 logits = model(input_ids).logits
 
+            # answer_indices point to the first digit token for each box regardless
+            # of whether the tokenizer produced a single " 10" token or split " "+"1"+"0".
+            # Reading directly from input_ids gives the correct token ID in both cases.
+            answer_first_token_ids = input_ids[0, answer_indices].tolist()
             values = logits[0, -1, answer_first_token_ids]
             pos_pred = values.argmax().item()
 
