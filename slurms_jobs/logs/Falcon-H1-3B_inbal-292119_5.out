@@ -1,0 +1,16 @@
+Running on node: s-002
+Date: Tue 28 Apr 2026 19:20:16 IDT
+Model: tiiuae/Falcon-H1-3B-Instruct
+Saving results_boxes to: /vol/joberant_nobck/data/NLP_368307701_2526a/zacharia1/inbal/results
+Running Layer: 5
+nnsight is not detected. Please install via 'pip install nnsight' for nnsight backend.
+[+] Using schema: SCHEMA_BOXES
+[+] Output directory: /vol/joberant_nobck/data/NLP_368307701_2526a/zacharia1/inbal/results
+[+] Loading model: tiiuae/Falcon-H1-3B-Instruct
+[+] Using input device: cuda:0
+[+] Model has 32 layers
+[+] Random seed set to: 42
+[+] Setting up causal model and datasets
+[+] Running experiments for layers 5 to 5 (inclusive, 1 layers)...
+
+[+] Processing layer 5/31

@@ -1,0 +1,38 @@
+/vol/joberant_nobck/data/NLP_368307701_2526a/inbalmoryles/envs/falcon-env/lib/python3.10/site-packages/mamba_ssm/ops/selective_scan_interface.py:164: FutureWarning: `torch.cuda.amp.custom_fwd(args...)` is deprecated. Please use `torch.amp.custom_fwd(args..., device_type='cuda')` instead.
+  def forward(ctx, xz, conv1d_weight, conv1d_bias, x_proj_weight, delta_proj_weight,
+/vol/joberant_nobck/data/NLP_368307701_2526a/inbalmoryles/envs/falcon-env/lib/python3.10/site-packages/mamba_ssm/ops/selective_scan_interface.py:240: FutureWarning: `torch.cuda.amp.custom_bwd(args...)` is deprecated. Please use `torch.amp.custom_bwd(args..., device_type='cuda')` instead.
+  def backward(ctx, dout):
+/vol/joberant_nobck/data/NLP_368307701_2526a/inbalmoryles/envs/falcon-env/lib/python3.10/site-packages/mamba_ssm/ops/triton/layer_norm.py:986: FutureWarning: `torch.cuda.amp.custom_fwd(args...)` is deprecated. Please use `torch.amp.custom_fwd(args..., device_type='cuda')` instead.
+  def forward(
+/vol/joberant_nobck/data/NLP_368307701_2526a/inbalmoryles/envs/falcon-env/lib/python3.10/site-packages/mamba_ssm/ops/triton/layer_norm.py:1045: FutureWarning: `torch.cuda.amp.custom_bwd(args...)` is deprecated. Please use `torch.amp.custom_bwd(args..., device_type='cuda')` instead.
+  def backward(ctx, dout, *args):
+/vol/joberant_nobck/data/NLP_368307701_2526a/inbalmoryles/envs/falcon-env/lib/python3.10/site-packages/mamba_ssm/distributed/tensor_parallel.py:26: FutureWarning: `torch.cuda.amp.custom_fwd(args...)` is deprecated. Please use `torch.amp.custom_fwd(args..., device_type='cuda')` instead.
+  def forward(ctx, x, weight, bias, process_group=None, sequence_parallel=True):
+/vol/joberant_nobck/data/NLP_368307701_2526a/inbalmoryles/envs/falcon-env/lib/python3.10/site-packages/mamba_ssm/distributed/tensor_parallel.py:62: FutureWarning: `torch.cuda.amp.custom_bwd(args...)` is deprecated. Please use `torch.amp.custom_bwd(args..., device_type='cuda')` instead.
+  def backward(ctx, grad_output):
+/vol/joberant_nobck/data/NLP_368307701_2526a/inbalmoryles/envs/falcon-env/lib/python3.10/site-packages/mamba_ssm/ops/triton/ssd_combined.py:758: FutureWarning: `torch.cuda.amp.custom_fwd(args...)` is deprecated. Please use `torch.amp.custom_fwd(args..., device_type='cuda')` instead.
+  def forward(ctx, zxbcdt, conv1d_weight, conv1d_bias, dt_bias, A, D, chunk_size, initial_states=None, seq_idx=None, dt_limit=(0.0, float("inf")), return_final_states=False, activation="silu",
+/vol/joberant_nobck/data/NLP_368307701_2526a/inbalmoryles/envs/falcon-env/lib/python3.10/site-packages/mamba_ssm/ops/triton/ssd_combined.py:836: FutureWarning: `torch.cuda.amp.custom_bwd(args...)` is deprecated. Please use `torch.amp.custom_bwd(args..., device_type='cuda')` instead.
+  def backward(ctx, dout, *args):
+Loading weights:   0%|          | 0/547 [00:00<?, ?it/s]Loading weights:   2%|▏         | 13/547 [00:00<00:04, 119.31it/s]Loading weights:   6%|▌         | 33/547 [00:00<00:03, 162.49it/s]Loading weights:   9%|▉         | 50/547 [00:00<00:03, 163.24it/s]Loading weights:  12%|█▏        | 67/547 [00:00<00:02, 162.17it/s]Loading weights:  15%|█▌        | 84/547 [00:00<00:02, 162.15it/s]Loading weights:  18%|█▊        | 101/547 [00:00<00:02, 160.69it/s]Loading weights:  22%|██▏       | 118/547 [00:00<00:02, 157.97it/s]Loading weights:  24%|██▍       | 134/547 [00:00<00:02, 155.10it/s]Loading weights:  27%|██▋       | 150/547 [00:00<00:02, 154.18it/s]Loading weights:  31%|███       | 168/547 [00:01<00:02, 159.95it/s]Loading weights:  34%|███▍      | 185/547 [00:01<00:02, 161.79it/s]Loading weights:  37%|███▋      | 202/547 [00:01<00:02, 160.77it/s]Loading weights:  40%|████      | 219/547 [00:01<00:02, 162.13it/s]Loading weights:  43%|████▎     | 236/547 [00:01<00:01, 164.42it/s]Loading weights:  46%|████▋     | 253/547 [00:01<00:01, 162.63it/s]Loading weights:  49%|████▉     | 270/547 [00:01<00:01, 160.19it/s]Loading weights:  52%|█████▏    | 287/547 [00:01<00:01, 157.58it/s]Loading weights:  56%|█████▌    | 304/547 [00:01<00:01, 160.44it/s]Loading weights:  59%|█████▊    | 321/547 [00:02<00:01, 155.15it/s]Loading weights:  62%|██████▏   | 337/547 [00:02<00:01, 152.54it/s]Loading weights:  65%|██████▍   | 354/547 [00:02<00:01, 156.97it/s]Loading weights:  68%|██████▊   | 372/547 [00:02<00:01, 159.18it/s]Loading weights:  71%|███████   | 388/547 [00:02<00:01, 158.20it/s]Loading weights:  74%|███████▍  | 406/547 [00:02<00:00, 164.44it/s]Loading weights:  77%|███████▋  | 423/547 [00:02<00:00, 161.63it/s]Loading weights:  82%|████████▏ | 446/547 [00:02<00:00, 173.98it/s]Loading weights:  85%|████████▍ | 464/547 [00:02<00:00, 165.62it/s]Loading weights:  88%|████████▊ | 481/547 [00:03<00:00, 159.60it/s]Loading weights:  91%|█████████ | 499/547 [00:03<00:00, 163.79it/s]Loading weights:  94%|█████████▍| 516/547 [00:03<00:00, 164.72it/s]Loading weights:  97%|█████████▋| 533/547 [00:03<00:00, 162.13it/s]Loading weights: 100%|██████████| 547/547 [00:03<00:00, 162.33it/s]
+Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
+Layers:   0%|          | 0/1 [00:00<?, ?it/s]
+Layer 4:   0%|          | 0/1000 [00:00<?, ?it/s][A
+Layer 4:   0%|          | 1/1000 [00:36<10:06:17, 36.41s/it][A
+Layer 4:   0%|          | 2/1000 [01:14<10:26:53, 37.69s/it][A
+Layer 4:   0%|          | 3/1000 [01:53<10:32:53, 38.09s/it][A
+Layer 4:   0%|          | 4/1000 [02:32<10:35:59, 38.31s/it][A
+Layer 4:   0%|          | 5/1000 [03:11<10:38:20, 38.49s/it][A
+Layer 4:   1%|          | 6/1000 [03:50<10:43:11, 38.82s/it][A
+Layer 4:   1%|          | 7/1000 [04:29<10:42:46, 38.84s/it][A
+Layer 4:   1%|          | 8/1000 [05:08<10:42:21, 38.85s/it][A
+Layer 4:   1%|          | 9/1000 [05:46<10:39:46, 38.73s/it][A
+Layer 4:   1%|          | 10/1000 [06:25<10:40:59, 38.85s/it][A
+Layer 4:   1%|          | 11/1000 [07:04<10:38:30, 38.74s/it][A
+Layer 4:   1%|          | 12/1000 [07:42<10:37:09, 38.69s/it][A
+Layer 4:   1%|▏         | 13/1000 [08:21<10:35:56, 38.66s/it][A
+Layer 4:   1%|▏         | 14/1000 [08:59<10:33:00, 38.52s/it][A
+Layer 4:   2%|▏         | 15/1000 [09:38<10:32:22, 38.52s/it][Aslurmstepd: error: *** JOB 292127 ON s-002 CANCELLED AT 2026-04-28T19:30:36 ***
+slurmstepd: error: _cgroup_procs_check: failed on path (null)/cgroup.procs: No such file or directory
+slurmstepd: error: Cannot write to cgroup.procs for (null)
+slurmstepd: error: Unable to move pid 1589112 to init root cgroup (null)

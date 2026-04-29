@@ -11,7 +11,6 @@ import sys
 import argparse
 import logging
 import random
-import gc #new
 from pathlib import Path
 
 # Add project root to path
@@ -93,104 +92,6 @@ def sanitize_model_name(model_id: str) -> str:
     return model_id.replace("/", "_")
 
 
-def get_model_input_device(model) -> torch.device:
-    """
-    Resolve a safe device for input tensors when model was loaded with device_map='auto'.
-    Avoids choosing 'meta'/'disk' placements used by offloading.
-    """
-    if hasattr(model, "hf_device_map") and isinstance(model.hf_device_map, dict):
-        # Prefer CUDA if any module is placed there.
-        for dev in model.hf_device_map.values():
-            if isinstance(dev, int):
-                return torch.device(f"cuda:{dev}")
-            if isinstance(dev, str):
-                d = dev.lower()
-                if d.startswith("cuda"):
-                    return torch.device(dev)
-
-        # Otherwise pick the first concrete non-meta/non-disk mapping.
-        for dev in model.hf_device_map.values():
-            if isinstance(dev, int):
-                return torch.device(f"cuda:{dev}")
-            if isinstance(dev, str):
-                d = dev.lower()
-                if d not in {"meta", "disk"}:
-                    return torch.device(dev)
-
-    # Fallback: first non-meta parameter/buffer device.
-    for p in model.parameters():
-        if p.device.type != "meta":
-            return p.device
-    for b in model.buffers():
-        if b.device.type != "meta":
-            return b.device
-
-    # Last resort for fully offloaded edge cases.
-    return torch.device("cpu")
-
-
-def _extract_boxes_answer_positions_from_offsets(prompt: str, tokenizer, metadata: dict, num_instances: int):
-    """
-    Tokenizer-agnostic extraction for SCHEMA_BOXES numeric answers.
-
-    Uses character offsets to map each "Box <number>" mention to the token index
-    containing that number's first digit, which works even when numbers are split
-    across multiple tokens (e.g., "6" + "9" for 69).
-    """
-    enc = tokenizer(prompt, return_offsets_mapping=True)
-    offsets = enc.get("offset_mapping")
-    if offsets is None:
-        raise ValueError("Tokenizer did not return offset mappings.")
-
-    # Fast tokenizers may return either:
-    # - unbatched: List[Tuple[start, end]]
-    # - batched:   List[List[Tuple[start, end]]]
-    if offsets and isinstance(offsets[0], (list, tuple)):
-        first = offsets[0]
-        if isinstance(first, tuple) and len(first) == 2:
-            # Already unbatched list of (start, end).
-            pass
-        elif isinstance(first, list):
-            # Batched output for a single prompt.
-            offsets = first
-
-    answer_indices = []
-    answer_labels = []
-    for match in re.finditer(r"Box\s*(\d+)", prompt):
-        label = match.group(1)
-        digit_start = match.start(1)
-
-        token_idx = None
-        for idx, (start, end) in enumerate(offsets):
-            # Special tokens often map to (0, 0); skip them.
-            if start == end:
-                continue
-            if start <= digit_start < end:
-                token_idx = idx
-                break
-
-        if token_idx is not None:
-            answer_indices.append(token_idx)
-            answer_labels.append(label)
-
-    # Only context statements should have a numeric "Box <n>" pattern.
-    if len(answer_indices) != num_instances:
-        raise AssertionError(
-            f"Offset-based extraction expected {num_instances} indices, got {len(answer_indices)}."
-        )
-
-    def _as_label(x):
-        m = re.search(r"\d+", str(x))
-        return m.group(0) if m else None
-
-    keyload_label = _as_label(metadata["keyload"])
-    payload_label = _as_label(metadata["payload"])
-    keyload_index = answer_labels.index(keyload_label) if keyload_label in answer_labels else None
-    payload_index = answer_labels.index(payload_label) if payload_label in answer_labels else None
-
-    return answer_indices, answer_labels, keyload_index, payload_index
-
-
 def run_experiment_for_layer(
     model,
     tokenizer,
@@ -201,7 +102,6 @@ def run_experiment_for_layer(
     layer: int,
     cat_to_query: int,
     model_id: str,
-    model_input_device: torch.device,
     generate: bool = False,
 ):
     """
@@ -233,10 +133,6 @@ def run_experiment_for_layer(
     token_positions = [-1]
     end_str = get_end_str(model_id)
     model_id_str = model_id
-    
-    def _extract_numeric_label(token: str):
-        match = re.search(r"\d+", str(token))
-        return match.group(0) if match else None
 
     for cur_index in tqdm(range(num_samples), desc=f"Layer {layer}"):
         prompt = format_prompt(tokenizer, train[cur_index]["input"]["raw_input"])
@@ -245,7 +141,6 @@ def run_experiment_for_layer(
         metadata = train[cur_index]["input"]["metadata"]
 
         answer_indices = []
-        answer_labels = []
         keyload_index = None
         payload_index = None
         for i, token in enumerate(prompt_str_tokenized):
@@ -254,27 +149,12 @@ def run_experiment_for_layer(
 
             if schema.matchers[cat_to_query](token):
                 answer_indices.append(i)
-                answer_labels.append(_extract_numeric_label(token) if schema.name == "boxes" and cat_to_query == 1 else token)
 
                 if prompt_str_tokenized[i].lower().strip() in metadata["keyload"].lower().strip():
                     keyload_index = len(answer_indices) - 1
 
                 if prompt_str_tokenized[i].lower().strip() in metadata["payload"].lower().strip():
                     payload_index = len(answer_indices) - 1
-
-        if (
-            schema.name == "boxes"
-            and cat_to_query == 1
-            and (
-                len(answer_indices) != num_instances
-                or keyload_index is None
-                or payload_index is None
-            )
-        ):
-            # Fallback for tokenizers that split numeric labels into multiple tokens.
-            answer_indices, answer_labels, keyload_index, payload_index = _extract_boxes_answer_positions_from_offsets(
-                prompt, tokenizer, metadata, num_instances
-            )
 
         assert (
             len(answer_indices) == num_instances
@@ -290,20 +170,13 @@ def run_experiment_for_layer(
         pos_index = metadata["dst_index"]
 
         with run_with_cf_hf(
-            model,
-            tokenizer,
-            prompt,
-            cf_prompt,
-            layer_idx=layer,
-            token_positions=token_positions,
-            device=model_input_device,
-            alpha=1,
+            model, tokenizer, prompt, cf_prompt, layer_idx=layer, token_positions=token_positions, alpha=1
         ):
-            input_ids = tokenizer(prompt, return_tensors="pt").input_ids.to(model_input_device)
+            input_ids = tokenizer(prompt, return_tensors="pt").input_ids.to(model.device)
             # START CHANGE
             with torch.no_grad():
                 # IMPORTANT: This line must be indented further than the 'with' above it
-                logits = model(input_ids, use_cache=False).logits
+                logits = model(input_ids).logits
             # END CHANGE
 
             # Get token IDs directly from input_ids instead of re-tokenizing strings
@@ -317,10 +190,7 @@ def run_experiment_for_layer(
                 pred = tokenizer.decode(pred_ids[0], skip_special_tokens=True)
                 pred = pred[pred.find(end_str) + len(end_str) :]
             else:
-                if schema.name == "boxes" and cat_to_query == 1:
-                    pred = answer_labels[pos_pred]
-                else:
-                    pred = prompt_str_tokenized[answer_indices[pos_pred]]
+                pred = prompt_str_tokenized[answer_indices[pos_pred]]
             
             # Strip whitespace and clean prediction to ensure proper matching
             # Remove all whitespace characters (spaces, tabs, newlines, etc.)
@@ -353,8 +223,6 @@ def run_experiment_for_layer(
             results["dist"].append(values.tolist())
             results["distance"].append(pos_index - pos_pred)
             results["generated"].append(generate)
-
-            del input_ids, logits, values #new
 
     df = pd.DataFrame(results)
     return df
@@ -390,8 +258,8 @@ def main():
     parser.add_argument(
         "--num-instances",
         type=int,
-        default=100,
-        help="Number of instances (default: 100)",
+        default=20,
+        help="Number of instances (default: 20)",
     )
     parser.add_argument(
         "--num-samples",
@@ -467,14 +335,8 @@ def main():
     print(f"[+] Loading model: {args.model_id}")
 
     # 1. Base Configuration
-    max_memory_mapping = { #new
-        0: "4GiB",         #new
-        1: "4GiB",        #new
-    }                      #new
-    
     model_kwargs = {
         "device_map": "auto",
-        "max_memory": max_memory_mapping, #new
         "torch_dtype": torch.bfloat16,  # Default for modern models
     }
 
@@ -494,16 +356,9 @@ def main():
     elif "zamba" in args.model_id.lower():
         print(f"[+] Applying Zamba/Mamba specific model loading configurations")
         model_kwargs["torch_dtype"] = torch.float16
-        # Triton mamba kernels do not play well with sharded/offloaded placement.
-        # Force the full model onto a single GPU so all kernel inputs stay on CUDA.
-        if torch.cuda.is_available():
-            model_kwargs["device_map"] = {"": 0}
-            print("[+] Zamba forced onto single GPU: cuda:0")
 
     # 4. Load Model
     model = AutoModelForCausalLM.from_pretrained(args.model_id, **model_kwargs)
-    model_input_device = get_model_input_device(model)
-    print(f"[+] Using input device: {model_input_device}")
 
     # 5. Load Tokenizer
     tokenizer_kwargs = {"token": args.hf_token} if args.hf_token else {}
@@ -573,7 +428,6 @@ def main():
             layer,
             args.cat_to_query,
             args.model_id,
-            model_input_device,
             generate=args.generate,
         )
         
@@ -585,9 +439,6 @@ def main():
         
         # Close figure to free memory
         plt.close(fig)
-
-        torch.cuda.empty_cache() #new
-        gc.collect()             #new
     
     print(f"\n[+] All experiments completed! Results saved in: {output_dir.absolute()}")
 
