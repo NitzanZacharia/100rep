@@ -92,6 +92,25 @@ def sanitize_model_name(model_id: str) -> str:
     return model_id.replace("/", "_")
 
 
+def _get_complete_label(prompt_str_tokenized, idx):
+    """
+    Return the full label string starting at token idx, consuming any
+    subsequent digit-only tokens that form the rest of a multi-token number
+    (e.g. ' 1' + '0'  ->  '10').
+    """
+    label = prompt_str_tokenized[idx].strip()
+    next_idx = idx + 1
+    while next_idx < len(prompt_str_tokenized):
+        nt = prompt_str_tokenized[next_idx]
+        # A continuation token has no leading space and is all digits
+        if nt and not nt.startswith(' ') and nt.strip().isdigit():
+            label += nt.strip()
+            next_idx += 1
+        else:
+            break
+    return label
+
+
 def run_experiment_for_layer(
     model,
     tokenizer,
@@ -106,7 +125,7 @@ def run_experiment_for_layer(
 ):
     """
     Run the patch effect experiment for a single layer.
-    
+
     Returns:
         pd.DataFrame: Results dataframe
     """
@@ -128,7 +147,7 @@ def run_experiment_for_layer(
         "distance": [],
         "generated": [],
     }
-    
+
     train = train_ds[schema.name][schema.name]
     token_positions = [-1]
     end_str = get_end_str(model_id)
@@ -150,10 +169,12 @@ def run_experiment_for_layer(
             if schema.matchers[cat_to_query](token):
                 answer_indices.append(i)
 
-                if prompt_str_tokenized[i].lower().strip() in metadata["keyload"].lower().strip():
+                # Use complete label (handles multi-token numbers like "10" = " 1"+"0")
+                complete = _get_complete_label(prompt_str_tokenized, i)
+                if complete.lower() in metadata["keyload"].lower().strip():
                     keyload_index = len(answer_indices) - 1
 
-                if prompt_str_tokenized[i].lower().strip() in metadata["payload"].lower().strip():
+                if complete.lower() in metadata["payload"].lower().strip():
                     payload_index = len(answer_indices) - 1
 
         assert (
@@ -169,32 +190,42 @@ def run_experiment_for_layer(
 
         pos_index = metadata["dst_index"]
 
+        # Resolve the full label for every answer position once (handles multi-token numbers)
+        answer_labels = [_get_complete_label(prompt_str_tokenized, idx) for idx in answer_indices]
+
+        # First token of each label — used for logit-based scoring.
+        # For single-token labels this is exact; for multi-token labels it is the
+        # best single-step approximation available without extra forward passes.
+        answer_first_token_ids = [
+            tokenizer.encode(' ' + lbl, add_special_tokens=False)[0]
+            for lbl in answer_labels
+        ]
+
         with run_with_cf_hf(
             model, tokenizer, prompt, cf_prompt, layer_idx=layer, token_positions=token_positions, alpha=1
         ):
             input_ids = tokenizer(prompt, return_tensors="pt").input_ids.to(model.device)
-            # START CHANGE
             with torch.no_grad():
-                # IMPORTANT: This line must be indented further than the 'with' above it
                 logits = model(input_ids).logits
-            # END CHANGE
 
-            # Get token IDs directly from input_ids instead of re-tokenizing strings
-            token_ids_at_answer_positions = input_ids[0, answer_indices].tolist()
-            values = logits[0, -1, token_ids_at_answer_positions]
-
+            values = logits[0, -1, answer_first_token_ids]
             pos_pred = values.argmax().item()
 
             if generate:
                 pred_ids = model.generate(input_ids, max_new_tokens=schema.max_new_tokens, do_sample=False)
                 pred = tokenizer.decode(pred_ids[0], skip_special_tokens=True)
-                pred = pred[pred.find(end_str) + len(end_str) :]
+                pred = pred[pred.find(end_str) + len(end_str):]
+                pred = re.sub(r'\s+', '', pred.strip())
+
+                # Derive pos_pred from the generated text so that `distance` is
+                # correct even when box labels are multi-token (e.g. "10" = 2 tokens).
+                for i, lbl in enumerate(answer_labels):
+                    if pred == lbl:
+                        pos_pred = i
+                        break
             else:
-                pred = prompt_str_tokenized[answer_indices[pos_pred]]
-            
-            # Strip whitespace and clean prediction to ensure proper matching
-            # Remove all whitespace characters (spaces, tabs, newlines, etc.)
-            pred = re.sub(r'\s+', '', pred.strip())
+                pred = answer_labels[pos_pred]
+                pred = re.sub(r'\s+', '', pred)
 
             if try_schema_checker(pred, metadata["positional"], schema):
                 patch_effect = "positional"

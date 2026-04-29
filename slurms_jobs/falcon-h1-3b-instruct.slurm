@@ -44,7 +44,8 @@ python run_layer_experiments.py \
     --model-id "${MODEL_ID}" \
     --output-dir "$RESULTS_DIR" \
     --start-layer 32 \
-    --num-instances 20 \
-    --num-samples 1000
+    --num-instances 100 \
+    --num-samples 1000 \
+    --generate
 
 echo "Job finished at: $(date)"
