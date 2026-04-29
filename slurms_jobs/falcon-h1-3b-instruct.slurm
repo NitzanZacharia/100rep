@@ -21,17 +21,17 @@ mkdir -p $HF_HOME
 export PYTORCH_CUDA_ALLOC_CONF=max_split_size_mb:128
 
 ### 2. Define Paths ###
-USERNAME="inbalmoryles"
+USERNAME="zacharia1"
 VOL_BASE="/vol/joberant_nobck/data/NLP_368307701_2526a/${USERNAME}"
 
 # Model and Directories
 MODEL_ID="tiiuae/Falcon-H1-3B-Instruct"
-REPO_DIR="/vol/joberant_nobck/data/NLP_368307701_2526a/inbalmoryles/100reps"
+REPO_DIR="${VOL_BASE}/inbal/100rep"
 RESULTS_DIR="${VOL_BASE}/mixing-mechs-results_boxes/run_100boxes_1000samples/${MODEL_ID}"
 
 # Cache & Setup
 export HF_HOME="${VOL_BASE}/hf_cache"
-export TRITON_CACHE_DIR="/vol/joberant_nobck/data/NLP_368307701_2526a/inbalmoryles/triton_cache"
+export TRITON_CACHE_DIR="${VOL_BASE}/triton_cache"
 export TMPDIR="${VOL_BASE}/tmp"
 export PIP_CACHE_DIR="${VOL_BASE}/pip_cache"
 export HF_TOKEN=$(cat "${VOL_BASE}/hf_token.txt")
