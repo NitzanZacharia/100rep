@@ -391,15 +391,30 @@ def main():
     if args.trust_remote_code:
         model_kwargs["trust_remote_code"] = True
 
-    # 3. Specific overrides for 8-bit models (e.g. falcon-7b-instruct)
+    # 3. Specific overrides per model family
     if "falcon-7b-instruct" in args.model_id.lower() or "8bit" in args.model_id.lower():
         print(f"[+] Applying 8-bit specific model loading configurations")
         model_kwargs.update({
             "load_in_8bit": True,
             "device_map": "auto",
-            "torch_dtype": torch.float16,  # 8-bit usually prefers fp16
+            "torch_dtype": torch.float16,
         })
-        
+
+    elif "falcon-h1" in args.model_id.lower():
+        # Falcon-H1 Mamba layers allocate large intermediates on long sequences.
+        # 4-bit quantization cuts weight memory from ~6 GB to ~1.5 GB, leaving
+        # enough headroom on a 10-12 GB GPU for the activation tensors.
+        print(f"[+] Applying Falcon-H1 4-bit quantization for long-sequence memory efficiency")
+        from transformers import BitsAndBytesConfig
+        model_kwargs.update({
+            "quantization_config": BitsAndBytesConfig(
+                load_in_4bit=True,
+                bnb_4bit_compute_dtype=torch.float16,
+                bnb_4bit_use_double_quant=True,
+            ),
+            "torch_dtype": torch.float16,
+        })
+
     elif "zamba" in args.model_id.lower():
         print(f"[+] Applying Zamba/Mamba specific model loading configurations")
         model_kwargs["torch_dtype"] = torch.float16

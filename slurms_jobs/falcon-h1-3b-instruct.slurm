@@ -8,7 +8,7 @@
 #SBATCH --account=gpu-students
 #SBATCH --array=0-31
 #SBATCH --time=23:50:00
-#SBATCH --gres=gpu:geforce_rtx_2080:1
+#SBATCH --gres=gpu:titan:2
 #SBATCH --cpus-per-task=8
 #SBATCH --mem=48G
 
@@ -18,7 +18,7 @@ conda activate /vol/joberant_nobck/data/NLP_368307701_2526a/inbalmoryles/envs/fa
 export HF_HOME="/vol/joberant_nobck/data/NLP_368307701_2526a/inbalmoryles/.cache/huggingface"
 mkdir -p $HF_HOME
 
-export PYTORCH_CUDA_ALLOC_CONF=max_split_size_mb:128
+export PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True,garbage_collection_threshold:0.8,max_split_size_mb:128
 
 ### 2. Define Paths ###
 USERNAME="zacharia1"
