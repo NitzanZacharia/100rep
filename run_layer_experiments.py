@@ -31,7 +31,7 @@ import pandas as pd
 import torch
 import matplotlib.pyplot as plt
 import re
-from transformers import AutoModelForCausalLM, AutoTokenizer
+from transformers import AutoModelForCausalLM, AutoTokenizer, BitsAndBytesConfig
 from tqdm import tqdm
 
 from training import (
@@ -419,7 +419,7 @@ def main():
     if args.load_in_8bit:
         print("[+] Loading model in 8-bit (bitsandbytes)")
         model_kwargs.pop("torch_dtype", None)   # bnb manages dtype internally
-        model_kwargs["load_in_8bit"] = True
+        model_kwargs["quantization_config"] = BitsAndBytesConfig(load_in_8bit=True)
 
     # 5. Load Model
     model = AutoModelForCausalLM.from_pretrained(args.model_id, **model_kwargs)
