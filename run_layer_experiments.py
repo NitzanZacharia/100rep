@@ -359,6 +359,11 @@ def main():
         action="store_true",
         help="Pass trust_remote_code=True when loading model and tokenizer (default: False)",
     )
+    parser.add_argument(
+        "--load-in-8bit",
+        action="store_true",
+        help="Load model in 8-bit (bitsandbytes). Halves weight memory; useful on smaller GPUs like T4.",
+    )
     
     args = parser.parse_args()
     
@@ -410,10 +415,16 @@ def main():
         print(f"[+] Applying Zamba/Mamba specific model loading configurations")
         model_kwargs["torch_dtype"] = torch.float16
 
-    # 4. Load Model
+    # 4. Apply 8-bit override if requested (e.g. for small GPUs like Colab T4)
+    if args.load_in_8bit:
+        print("[+] Loading model in 8-bit (bitsandbytes)")
+        model_kwargs.pop("torch_dtype", None)   # bnb manages dtype internally
+        model_kwargs["load_in_8bit"] = True
+
+    # 5. Load Model
     model = AutoModelForCausalLM.from_pretrained(args.model_id, **model_kwargs)
 
-    # 5. Load Tokenizer
+    # 6. Load Tokenizer
     tokenizer_kwargs = {"token": args.hf_token} if args.hf_token else {}
     if args.trust_remote_code:
         tokenizer_kwargs["trust_remote_code"] = True
